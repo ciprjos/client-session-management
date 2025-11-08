@@ -10,7 +10,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDatabase(configuration);
+        services.AddDatabase(configuration)
+                .AddRepositories();
         return services;
     }
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
@@ -28,6 +29,8 @@ public static class DependencyInjection
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<ISessionRepository, SessionRepository>();
+        services.AddScoped<IClientRepository, ClientRepository>();
+
         return services;
     }
 }

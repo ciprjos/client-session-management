@@ -7,10 +7,14 @@ using FluentValidation;
 using System.Text.Json;
 
 namespace Application.Services;
-internal sealed class SessionService(ISessionRepository sessionRepository, IValidator<AddSessionDto> addSessioValidator, IUnitOfWork unitOfWork) : ISessionService
+internal sealed class SessionService(ISessionRepository sessionRepository, 
+                                    IClientRepository clientRepository,
+                                    IValidator<AddSessionDto> addSessionValidator, 
+                                    IUnitOfWork unitOfWork) : ISessionService
 {
     private readonly ISessionRepository _sessionRepository = sessionRepository;
-    private readonly IValidator<AddSessionDto> _addSessioValidator = addSessioValidator;
+    private readonly IClientRepository _clientRepository = clientRepository;
+    private readonly IValidator<AddSessionDto> _addSessioValidator = addSessionValidator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<bool>> AddAsync(AddSessionDto addSessionDto, CancellationToken cancellationToken)
@@ -22,6 +26,13 @@ internal sealed class SessionService(ISessionRepository sessionRepository, IVali
             var errors = JsonSerializer.Serialize(validationResult.Errors);
 
             return Result.Failure<bool>(Error.Validation("Session.Validation", errors));
+        }
+        
+        var client = await _clientRepository.GetByIdAsync(addSessionDto.ClientId, cancellationToken);
+
+        if (client == null)
+        {
+            return Result.Failure<bool>(Error.NotFound("Session.ClientNotFound", $"Client with ID {addSessionDto.ClientId} not found."));
         }
 
         var session = new Session

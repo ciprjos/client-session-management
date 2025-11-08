@@ -1,5 +1,4 @@
-﻿using Application.DTOs;
-using Application.Interfaces;
+﻿using Application.Interfaces;
 using Application.Services;
 using Application.Validators;
 using FluentValidation;
@@ -19,7 +18,6 @@ public static class DependencyInjection
     {
         services.AddScoped<ISessionService, SessionService>();
 
-        
         return services;
     }
 

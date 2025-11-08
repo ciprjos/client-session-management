@@ -4,13 +4,9 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
-internal sealed class SessionRepository : ISessionRepository
+internal sealed class SessionRepository(ApplicationDbContext context) : ISessionRepository, IUnitOfWork
 {
-    private readonly ApplicationDbContext _context;
-    public SessionRepository(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
 
     public async Task AddAsync(Session session, CancellationToken cancellationToken)
     {
@@ -31,5 +27,10 @@ internal sealed class SessionRepository : ISessionRepository
     public void Update(Session session)
     {
         _context.Sessions.Update(session);
+    }
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        int result = await _context.SaveChangesAsync(cancellationToken);
+        return result;
     }
 }

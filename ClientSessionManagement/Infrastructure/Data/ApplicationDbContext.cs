@@ -1,8 +1,9 @@
 ﻿using Domain.Entities;
+using Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IUnitOfWork
 {
     public DbSet<Client> Clients { get; set; }
     public DbSet<Provider> Providers { get; set; }

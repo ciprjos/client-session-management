@@ -145,6 +145,27 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
         return Result.Success(true);
     }
+
+    public async Task<Result<bool>> DeleteAsync(Guid sessionId, CancellationToken cancellationToken)
+    {
+        var session = await _sessionRepository.GetByIdAsync(sessionId, cancellationToken);
+      
+        if (session == null)
+        {
+            return Result.Failure<bool>(Error.NotFound("Session.NotFound", $"Session with ID {sessionId} not found."));
+        }
+
+        _sessionRepository.Remove(session);
+
+        var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (result == 0)
+        {
+            return Result.Failure<bool>(Error.Failure("Session.Delete", "Failed to delete client session."));
+        }
+
+        return Result.Success(true);
+    }
     private static List<GetSessionsDto> MapToGetSessionsDto(IEnumerable<Session> sessions)
     {
         var sessionDtos = new List<GetSessionsDto>();

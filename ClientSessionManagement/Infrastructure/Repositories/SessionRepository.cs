@@ -14,7 +14,11 @@ internal sealed class SessionRepository(ApplicationDbContext context) : ISession
     }
     public async Task<IEnumerable<Session>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await _context.Sessions.ToListAsync(cancellationToken);
+        return await _context.Sessions.Include(x => x.Provider)
+                                      .Include(x => x.Client)
+                                      .Include(x => x.SessionType)
+                                      .OrderBy(x => x.SessionDate)
+                                      .ToListAsync(cancellationToken);
     }
     public async Task<Session?> GetByNameAsync(string name, CancellationToken cancellationToken)
     {

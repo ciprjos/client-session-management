@@ -90,4 +90,34 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
         return Result.Success(true);
     }
+
+    public async Task<Result<IEnumerable<GetSessionsDto>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        var sessions = await _sessionRepository.GetAllAsync(cancellationToken);
+
+        var mappedSessions = MapToGetSessionsDto(sessions);
+
+        return Result.Success(mappedSessions);
+    }
+
+    private static IEnumerable<GetSessionsDto> MapToGetSessionsDto(IEnumerable<Session> sessions)
+    {
+        var sessionDtos = new List<GetSessionsDto>();
+
+        foreach (var data in sessions)
+        {
+           var session = new GetSessionsDto
+            {
+                SessionId = data.Id,
+                ProviderName = data.Provider.Name,
+                ClientName = data.Client.Name,
+                SessionType = data.SessionType.Name,
+                SessionDate = data.SessionDate,
+                Notes = data.Notes,
+            };
+            sessionDtos.Add(session);
+        }
+
+        return sessionDtos;
+    }
 }

@@ -25,4 +25,17 @@ public class SessionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("client-sessions")]
+    public async Task<IActionResult> ClientSessions(CancellationToken cancellationToken)
+    {
+        var result = await _sessionService.GetAllAsync(cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result);
+    }
 }

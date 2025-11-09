@@ -32,7 +32,7 @@ public static class DependencyInjection
     {
         services.AddScoped<ISessionRepository, SessionRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
-
+        services.AddScoped<IProviderRepository, ProviderRepository>();
         return services;
     }
 }

@@ -9,11 +9,13 @@ using System.Text.Json;
 namespace Application.Services;
 internal sealed class SessionService(ISessionRepository sessionRepository, 
                                     IClientRepository clientRepository,
+                                    IProviderRepository providerRepository,
                                     IValidator<AddSessionDto> addSessionValidator, 
                                     IUnitOfWork unitOfWork) : ISessionService
 {
     private readonly ISessionRepository _sessionRepository = sessionRepository;
     private readonly IClientRepository _clientRepository = clientRepository;
+    private readonly IProviderRepository _providerRepository = providerRepository;
     private readonly IValidator<AddSessionDto> _addSessioValidator = addSessionValidator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
@@ -34,6 +36,22 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
         {
             return Result.Failure<bool>(Error.NotFound("Session.ClientNotFound", $"Client with ID {addSessionDto.ClientId} not found."));
         }
+
+        var provider = await _providerRepository.GetByIdAsync(addSessionDto.ProviderId, cancellationToken);
+
+        if (provider is null)
+        {
+            return Result.Failure<bool>(Error.NotFound("Session.ProviderNotFound", $"Provider with ID {addSessionDto.ProviderId} not found."));
+        }
+
+        var providerSessionType = provider.ProviderSessionTypes.FirstOrDefault(pst => pst.SessionTypeId == addSessionDto.SessionTypeId);
+
+        if (providerSessionType is null)
+        {
+            return Result.Failure<bool>(Error.Validation("Session.ProviderSessionTypeInvalid", $"Provider with ID {addSessionDto.ProviderId} does not offer session type with ID {addSessionDto.SessionTypeId}."));
+        }
+
+
 
         var session = new Session
         {

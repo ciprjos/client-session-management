@@ -22,7 +22,9 @@ public static class DependencyInjection
         {
             options.UseSqlServer(connectionsString);
         });
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        services.AddSingleton<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        services.AddScoped<DatabaseInitializer>();
         return services;
     }
 

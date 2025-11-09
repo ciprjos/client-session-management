@@ -1,6 +1,7 @@
 using API.Extensions;
 using Application;
 using Infrastructure;
+using Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var initializer = services.GetRequiredService<DatabaseInitializer>();
+        await initializer.Seed();
+    }
+
     app.UseSwaggerWithUi();
 }
 
@@ -27,5 +35,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+
 
 app.Run();

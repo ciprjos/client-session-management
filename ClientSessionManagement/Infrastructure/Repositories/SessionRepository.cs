@@ -22,7 +22,9 @@ internal sealed class SessionRepository(ApplicationDbContext context) : ISession
     }
     public async Task<Session?> GetByNameAsync(string name, CancellationToken cancellationToken)
     {
-        return await _context.Sessions.FirstOrDefaultAsync(s => s.Notes == name, cancellationToken);
+        return await _context.Sessions
+                             .Include(x => x.Client)
+                             .FirstOrDefaultAsync(s => s.Client.Name == name, cancellationToken);
     }
     public async Task<Session?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {

@@ -6,4 +6,5 @@ public interface ISessionService
 {
     Task<Result<bool>> AddAsync(AddSessionDto addSessionDto, CancellationToken cancellationToken);
     Task<Result<List<GetSessionsDto>>> GetAllAsync(CancellationToken cancellationToken);
+    Task<Result<List<GetSessionsDto>>> GetSessionsByClientNameAsync(FilterSession filter, CancellationToken cancellationToken);
 }

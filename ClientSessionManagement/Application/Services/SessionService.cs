@@ -4,6 +4,7 @@ using Domain.Common;
 using Domain.Entities;
 using Domain.Interfaces;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace Application.Services;
@@ -16,12 +17,12 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
     private readonly ISessionRepository _sessionRepository = sessionRepository;
     private readonly IClientRepository _clientRepository = clientRepository;
     private readonly IProviderRepository _providerRepository = providerRepository;
-    private readonly IValidator<AddSessionDto> _addSessioValidator = addSessionValidator;
+    private readonly IValidator<AddSessionDto> _addSessionValidator = addSessionValidator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<bool>> AddAsync(AddSessionDto addSessionDto, CancellationToken cancellationToken)
     {
-        var validationResult = await _addSessioValidator.ValidateAsync(addSessionDto, cancellationToken);
+        var validationResult = await _addSessionValidator.ValidateAsync(addSessionDto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
@@ -93,12 +94,33 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
     public async Task<Result<List<GetSessionsDto>>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var sessions = await _sessionRepository.GetAllAsync(cancellationToken);
+        var sessions = _sessionRepository.GetAll();
 
-        var mappedSessions = MapToGetSessionsDto(sessions);
+        var sessionsList = await sessions.ToListAsync(cancellationToken);
+
+        var mappedSessions = MapToGetSessionsDto(sessionsList);
 
         return Result.Success(mappedSessions);
     }
+
+    //Return sessions by client name
+    //Return list, if client has same name
+    public async Task<Result<List<GetSessionsDto>>> GetSessionsByClientNameAsync(FilterSession filter, CancellationToken cancellationToken)
+    {
+        var sessions = _sessionRepository.GetAll();
+
+        if (!string.IsNullOrWhiteSpace(filter.ClientName))
+        {
+            sessions = sessions.Where(s => s.Client.Name == filter.ClientName);
+        }
+
+        var sessionsList = await sessions.ToListAsync(cancellationToken);
+
+        var mappedSessions = MapToGetSessionsDto(sessionsList);
+
+        return Result.Success(mappedSessions);
+    }
+
 
     private static List<GetSessionsDto> MapToGetSessionsDto(IEnumerable<Session> sessions)
     {
@@ -106,7 +128,7 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
         foreach (var data in sessions)
         {
-           var session = new GetSessionsDto
+            var session = new GetSessionsDto
             {
                 SessionId = data.Id,
                 ProviderName = data.Provider.Name,

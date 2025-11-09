@@ -38,4 +38,17 @@ public class SessionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpGet("client-session")]
+    public async Task<IActionResult> ClientSession([FromQuery] FilterSession filter, CancellationToken cancellationToken)
+    {
+        var result = await _sessionService.GetSessionsByClientNameAsync(filter, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result);
+    }
 }

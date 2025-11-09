@@ -51,4 +51,17 @@ public class SessionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPut("update-session/{Id:guid}")]
+    public async Task<IActionResult> UpdateSession([FromRoute] Guid Id, [FromBody] UpdateSessionDto updateSession, CancellationToken cancellationToken)
+    {
+        var result = await _sessionService.UpdateAsync(Id, updateSession, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result);
+    }
 }

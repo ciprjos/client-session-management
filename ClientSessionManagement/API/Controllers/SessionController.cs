@@ -64,4 +64,17 @@ public class SessionController : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpDelete("delete-session/{Id:guid}")]
+    public async Task<IActionResult> DeleteSession([FromRoute] Guid Id, CancellationToken cancellationToken)
+    {
+        var result = await _sessionService.DeleteAsync(Id, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(result);
+    }
 }

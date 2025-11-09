@@ -23,6 +23,6 @@ public class SessionController : ControllerBase
             return BadRequest(result.Error);
         }
 
-        return Ok("AddClientSession endpoint is working.");
+        return Ok(result);
     }
 }

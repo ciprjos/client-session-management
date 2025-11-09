@@ -28,6 +28,14 @@ internal sealed class SessionRepository(ApplicationDbContext context) : ISession
     {
         _context.Sessions.Update(session);
     }
+    public void Remove(Session session)
+    {
+        _context.Sessions.Remove(session);
+    }
+    public async Task<Session?> ClientSessionAsync(Guid clientId, CancellationToken cancellationToken)
+    {
+        return await _context.Sessions.FirstOrDefaultAsync(s => s.ClientId == clientId, cancellationToken);
+    }
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         int result = await _context.SaveChangesAsync(cancellationToken);

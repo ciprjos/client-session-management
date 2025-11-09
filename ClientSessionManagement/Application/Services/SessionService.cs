@@ -7,10 +7,10 @@ using FluentValidation;
 using System.Text.Json;
 
 namespace Application.Services;
-internal sealed class SessionService(ISessionRepository sessionRepository, 
+internal sealed class SessionService(ISessionRepository sessionRepository,
                                     IClientRepository clientRepository,
                                     IProviderRepository providerRepository,
-                                    IValidator<AddSessionDto> addSessionValidator, 
+                                    IValidator<AddSessionDto> addSessionValidator,
                                     IUnitOfWork unitOfWork) : ISessionService
 {
     private readonly ISessionRepository _sessionRepository = sessionRepository;
@@ -29,7 +29,7 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
             return Result.Failure<bool>(Error.Validation("Session.Validation", errors));
         }
-        
+
         var client = await _clientRepository.GetByIdAsync(addSessionDto.ClientId, cancellationToken);
 
         if (client == null)
@@ -51,7 +51,22 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
             return Result.Failure<bool>(Error.Validation("Session.ProviderSessionTypeInvalid", $"Provider with ID {addSessionDto.ProviderId} does not offer session type with ID {addSessionDto.SessionTypeId}."));
         }
 
+        var sessionDate = addSessionDto.SessionDate.ToUniversalTime();
 
+        if (sessionDate < DateTime.UtcNow.Date)
+        {
+            return Result.Failure<bool>(Error.Validation("Session.SessionDateInvalid", "Session date cannot be in the past."));
+        }
+
+        var clientSession = await _sessionRepository.ClientSessionAsync(addSessionDto.ClientId, cancellationToken);
+
+        if (clientSession != null)
+        {
+            if (addSessionDto.SessionDate.Date <= clientSession.SessionDate.Date)
+            {
+                return Result.Failure<bool>(Error.Validation("Session.SessionDateInvalid", "New session date must be after the existing session date."));
+            }
+        }
 
         var session = new Session
         {

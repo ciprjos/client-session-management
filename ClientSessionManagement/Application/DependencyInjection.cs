@@ -24,6 +24,7 @@ public static class DependencyInjection
     public static IServiceCollection AddValidators(this IServiceCollection services)
     {
         services.AddValidatorsFromAssemblyContaining<AddSessionValidator>();
+        services.AddValidatorsFromAssemblyContaining<UpdateSessionValidator>();
         return services;
     }
 }

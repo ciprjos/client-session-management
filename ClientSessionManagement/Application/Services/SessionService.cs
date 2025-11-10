@@ -12,12 +12,14 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
                                     IClientRepository clientRepository,
                                     IProviderRepository providerRepository,
                                     IValidator<AddSessionDto> addSessionValidator,
+                                    IValidator<UpdateSessionDto> updateSessionValidator,
                                     IUnitOfWork unitOfWork) : ISessionService
 {
     private readonly ISessionRepository _sessionRepository = sessionRepository;
     private readonly IClientRepository _clientRepository = clientRepository;
     private readonly IProviderRepository _providerRepository = providerRepository;
     private readonly IValidator<AddSessionDto> _addSessionValidator = addSessionValidator;
+    private readonly IValidator<UpdateSessionDto> _updateSessionValidator = updateSessionValidator;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<bool>> AddAsync(AddSessionDto addSessionDto, CancellationToken cancellationToken)
@@ -123,6 +125,14 @@ internal sealed class SessionService(ISessionRepository sessionRepository,
 
     public async Task<Result<bool>> UpdateAsync(Guid sessionId, UpdateSessionDto updateSessionDto, CancellationToken cancellationToken)
     {
+        var validationResult = await _updateSessionValidator.ValidateAsync(updateSessionDto, cancellationToken);
+        
+        if (!validationResult.IsValid)
+        {
+            var errors = JsonSerializer.Serialize(validationResult.Errors);
+            return Result.Failure<bool>(Error.Validation("Session.Validation", errors));
+        }
+
         var session = await _sessionRepository.GetByIdAsync(sessionId, cancellationToken);
        
         if (session == null)
